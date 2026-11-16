@@ -216,21 +216,31 @@ def foreign_passport_state(state):
                     "passport_number": "Z1234567", "issue_date": "22.10.2020"}
 
 
-def test_foreign_passport_only_for_an_existing_person(client, fake_engines):  # noqa: F811
-    # 1. Nobody saved yet: the foreign passport is analysed, but cannot create a new person.
+def test_foreign_passport_creates_a_new_person(client, fake_engines):  # noqa: F811
+    """User decision 2026-11-16: a foreign passport is accepted like a German passport, also when
+    nobody is saved yet. A German document of the same person later finds that person."""
     foreign_passport_state(fake_engines)
     a = upload(client, n_files=1, scan=5).json()
     assert a["doc_type"]["doc_type"] == "FOREIGN_PASSPORT" and a["rejected"] is None
+    assert a["match"]["kind"] == "new"
     r = client.post(f"/api/analyses/{a['analysis_id']}/approve", json={"values": values_of(a), "person_id": None})
-    assert r.status_code == 422 and "already exists" in r.json()["detail"]
+    assert r.status_code == 200, r.text
+    pid = r.json()["person_id"]
+    block = client.get(f"/api/persons/{pid}").json()["data"]["documents"][0]
+    assert block["doc_type"] == "FOREIGN_PASSPORT" and block["issuing_country"] == "IND"
+    assert block["passport_number"] != "Z1234567" and "passport_number" in block["anonymized_fields"]
 
-    # 2. Save the German document first (here the ID card specimen) ...
+    # The German ID card of the same person is matched to the person created from the passport.
+    id_card_state(fake_engines)
+    a2 = upload(client).json()
+    assert a2["match"]["kind"] == "existing" and a2["match"]["person_id"] == pid
+
+
+def test_foreign_passport_for_an_existing_person(client, fake_engines):  # noqa: F811
     id_card_state(fake_engines)
     a1 = upload(client).json()
     pid = client.post(f"/api/analyses/{a1['analysis_id']}/approve",
                       json={"values": values_of(a1), "person_id": None}).json()["person_id"]
-
-    # 3. ... then the foreign passport is matched to that person and can be saved for them.
     foreign_passport_state(fake_engines)
     a2 = upload(client, n_files=1, scan=6).json()
     assert a2["match"]["kind"] == "existing" and a2["match"]["person_id"] == pid
@@ -238,4 +248,3 @@ def test_foreign_passport_only_for_an_existing_person(client, fake_engines):  # 
     assert r.status_code == 200, r.text
     block = client.get(f"/api/persons/{pid}").json()["data"]["documents"][-1]
     assert block["doc_type"] == "FOREIGN_PASSPORT" and block["issuing_country"] == "IND"
-    assert block["passport_number"] != "Z1234567" and "passport_number" in block["anonymized_fields"]

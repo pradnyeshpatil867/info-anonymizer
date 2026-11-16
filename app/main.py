@@ -234,9 +234,6 @@ def approve(analysis_id: str, body: ApproveIn, vault: Vault = Depends(get_vault)
     with _db_lock:
         if body.person_id is not None and vault.get_person(body.person_id) is None:
             raise HTTPException(404, "The chosen person does not exist.")
-        if body.person_id is None and a.proposal.doc_type.doc_type == pipeline.FOREIGN_PASSPORT:
-            raise HTTPException(422, "A foreign passport can only be saved for a person who already exists. "
-                                     "Save the German document (for example the residence permit) first.")
         if body.person_id is None:
             # Creating a NEW person who already exists would make a duplicate.
             existing = vault.find_by_match_key(match_key(values["given_names"], values["surname"],

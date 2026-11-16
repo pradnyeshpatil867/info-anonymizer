@@ -34,8 +34,8 @@ from app.ocr import paddle, tesseract
 from app.ocr.pdf import load_pages, upscale_if_small
 
 # Documents that always have an MRZ (on the back of cards).
-# A passport NOT issued in Germany (user decision 2026-11-16, option 2): accepted only for a
-# person who already exists, for example the holder of a German residence permit.
+# A passport NOT issued in Germany (user decisions 2026-11-16): accepted like a German passport,
+# for an existing or a new person. Other foreign documents are skipped.
 FOREIGN_PASSPORT = "FOREIGN_PASSPORT"
 MRZ_DOC_TYPES = {"DE_ID_CARD", "DE_PASSPORT", "DE_RESIDENCE_PERMIT", FOREIGN_PASSPORT}
 # Which field holds the document number, per document type.
@@ -197,21 +197,18 @@ def analyse_document(files: list[tuple[str, bytes]], vault: Vault | None = None)
         if mrz.issued_in_germany:
             issuing_country = "DEU"
         elif mrz.document_code.startswith("P"):
-            # A foreign passport: accepted, but only for a person who already exists (checked on Save).
+            # A foreign passport: accepted like a German passport (existing or new person).
             issuing_country = mrz.issuing_state
             doc_type = DocTypeResult(FOREIGN_PASSPORT, "mrz",
                                      f"Passport issued by {mrz.issuing_state!r} (MRZ document code {mrz.document_code!r}).")
-            document_checks = [CheckResult("doc_type", Status.OK, f"Document type: {doc_type.reason}"),
-                               CheckResult("issuing_country", Status.WARN,
-                                           "Foreign passport: it can only be saved for a person who already "
-                                           "exists (for example from a German residence permit).")]
+            document_checks = [CheckResult("doc_type", Status.OK, f"Document type: {doc_type.reason}")]
         else:
             # Not a passport and not from Germany: skipped. The type label must not say "DE_...".
             doc_type = DocTypeResult("FOREIGN_DOCUMENT", "mrz",
                                      f"Issued by {mrz.issuing_state!r} (MRZ document code {mrz.document_code!r}).")
             document_checks = [CheckResult("doc_type", Status.OK, f"Document type: {doc_type.reason}")]
-            rejected = (f"Not issued in Germany (MRZ issuing state {mrz.issuing_state!r}). Only foreign "
-                        "PASSPORTS are accepted, for a person who already exists. This document is skipped.")
+            rejected = (f"Not issued in Germany (MRZ issuing state {mrz.issuing_state!r}). Of the documents "
+                        "not issued in Germany, only passports are accepted. This document is skipped.")
     elif doc_type.doc_type.startswith("DE_") and "DEUTSCHLAND" in _squash(paddle_text):
         issuing_country = "DEU"
         document_checks.append(CheckResult("issuing_country", Status.OK, "The document says DEUTSCHLAND."))

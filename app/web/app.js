@@ -181,8 +181,8 @@ function showReview() {
   $("field-rows").replaceChildren();
   for (const f of a.fields) addFieldRow(f.name, f.value, f.status, f.messages);
   refreshAddFieldMenu();
-  const canSave = renderPersonChoice(a.match, a.doc_type.doc_type === "FOREIGN_PASSPORT");
-  $("save").disabled = Boolean(a.rejected) || !canSave;
+  renderPersonChoice(a.match);
+  $("save").disabled = Boolean(a.rejected);
   $("save-error").hidden = true;
   showStep("review");
 }
@@ -225,20 +225,12 @@ $("add-field").addEventListener("change", (event) => {
   $("field-rows").lastElementChild.querySelector('input[type="text"]').focus();
 });
 
-// Returns false when the document cannot be saved for anybody.
-function renderPersonChoice(match, foreignPassport) {
+function renderPersonChoice(match) {
   const box = $("person-choice");
   box.replaceChildren(el("legend", { class: "small", text: "Save this document for" }));
   $("match-reason").textContent = match ? match.reason : "";
   const options = (match ? match.candidates : []).map((c) => ({ value: c.person_id, text: `${c.pseudonym} (${c.person_id}) – existing person` }));
-  // A foreign passport can only be added to a person who already exists.
-  if (!foreignPassport) options.push({ value: "", text: "A new person" });
-  if (options.length === 0) {
-    box.append(el("p", { class: "small", text: "No saved person matches this passport. A foreign passport can only be " +
-      "added to a person who already exists: save the German document (for example the residence permit) first, " +
-      "then analyse the passport again." }));
-    return false;
-  }
+  options.push({ value: "", text: "A new person" });
   // Pre-select only when the app is sure. For "confirm" and "conflict" the user must choose.
   const preselect = !match || ["new", "incomplete"].includes(match.kind) ? "" : match.kind === "existing" ? match.person_id : null;
   for (const o of options) {
@@ -246,7 +238,6 @@ function renderPersonChoice(match, foreignPassport) {
     radio.checked = o.value === preselect;
     box.append(el("label", {}, radio, o.text));
   }
-  return true;
 }
 
 $("cancel").addEventListener("click", () => { analysis = null; showStep("upload"); });

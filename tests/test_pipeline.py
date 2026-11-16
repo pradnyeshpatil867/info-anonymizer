@@ -259,7 +259,7 @@ def test_foreign_passport_is_accepted_as_foreign_passport(fake_engines):
     assert p.mrz and p.mrz.valid, p.mrz and p.mrz.checks
     assert not p.rejected
     assert p.doc_type.doc_type == pipeline.FOREIGN_PASSPORT and p.issuing_country == "IND"
-    assert any("already exists" in c.message for c in p.document_checks)
+    assert not any("already exists" in c.message for c in p.document_checks)   # no restriction any more
     assert p.fields["passport_number"].status is Status.OK          # compared with the MRZ number
 
 
