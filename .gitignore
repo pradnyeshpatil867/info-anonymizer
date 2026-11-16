@@ -1,0 +1,23 @@
+# Python virtual environment and caches
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Real or test personal data – never commit
+data/
+people/
+samples/
+*.db
+*.db-journal
+
+# Downloaded OCR model files (large, re-downloadable)
+models/
+
+# Local working notes (rule: notes stay local)
+docs/
+
+# Editor and OS files
+.DS_Store
+.idea/
+.vscode/

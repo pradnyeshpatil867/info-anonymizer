@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>info-anonymizer</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand">info-anonymizer</span>
+    <nav>
+      <a href="#upload" data-tab="upload">Upload</a>
+      <a href="#search" data-tab="search">Search</a>
+    </nav>
+    <span class="local-note">Runs on this computer only · Phase 1: vault not encrypted</span>
+  </header>
+
+  <main>
+    <!-- Step 1: UPLOAD -->
+    <section id="step-upload" class="step">
+      <h1>Upload a document</h1>
+      <p class="muted">Choose the file(s) of <b>one</b> document, for example the front and back of an ID card (up to 4 files).</p>
+      <div class="card">
+        <div class="row">
+          <label class="button" for="files-input">Choose files…</label>
+          <input id="files-input" type="file" multiple accept=".jpg,.jpeg,.png,.pdf" hidden>
+          <label class="button secondary" for="folder-input">Choose folder…</label>
+          <input id="folder-input" type="file" webkitdirectory multiple hidden>
+        </div>
+        <p id="pick-info" class="muted small">No files chosen.</p>
+        <ul id="file-list" class="file-list"></ul>
+        <div class="row">
+          <button id="analyse" type="button" disabled>Analyse</button>
+          <button id="clear-files" type="button" class="secondary" hidden>Clear</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 2: ANALYSING (only a loading screen) -->
+    <section id="step-analysing" class="step" hidden>
+      <div class="loading">
+        <div class="spinner" aria-hidden="true"></div>
+        <h1>Analysing…</h1>
+        <p class="muted">OCR and the local AI model are reading <b id="analysing-name"></b>.<br>This takes about one minute.</p>
+        <p id="analysing-timer" class="timer">0 s</p>
+      </div>
+    </section>
+
+    <!-- Step 3: REVIEW -->
+    <section id="step-review" class="step" hidden>
+      <div class="head">
+        <h1>Check and correct</h1>
+        <span id="overall" class="badge big"></span>
+      </div>
+      <!-- A rejected document cannot be saved: show only the reason and a way back. -->
+      <div id="rejected-box" hidden>
+        <div id="rejected" class="alert fail"></div>
+        <button id="rejected-again" type="button">Start again with a new document</button>
+      </div>
+      <div id="review-body" class="review">
+        <div id="pages" class="pages"></div>
+        <div class="panel">
+          <ul id="doc-checks" class="checks"></ul>
+          <p class="muted small">Compare every value with the image. <b>Check</b> and <b>Error</b> need your attention. You can edit any value.
+            Personal data (name, birth date, numbers, address, contact, IBAN, tax ID) is always anonymized.
+            Tick <b>Anonymize</b> for any other value you want to replace with a fake value in the JSON file.</p>
+          <table class="fields">
+            <tbody id="field-rows"></tbody>
+          </table>
+          <div class="row small">
+            <label for="add-field">Add a missing field:</label>
+            <select id="add-field"></select>
+          </div>
+
+          <h2>Person</h2>
+          <p id="match-reason" class="small muted"></p>
+          <fieldset id="person-choice" class="choices"></fieldset>
+
+          <div id="save-error" class="alert fail" hidden></div>
+          <div class="row">
+            <button id="save" type="button">Save</button>
+            <button id="cancel" type="button" class="secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 4: DONE -->
+    <section id="step-done" class="step" hidden>
+      <div id="done-box" class="alert ok big-alert"></div>
+      <ul id="done-warnings" class="checks"></ul>
+      <h2>Anonymized data (JSON file)</h2>
+      <p class="muted small">Personal data is replaced by fake values of the same kind (fake name, fake address, fake numbers…). The list <code>anonymized_fields</code> says which values are fake. Other values are real, shown in clear text.</p>
+      <pre id="done-json" class="json"></pre>
+      <div class="row">
+        <button id="again" type="button">Start again with a new document</button>
+      </div>
+    </section>
+
+    <!-- SEARCH -->
+    <section id="step-search" class="step" hidden>
+      <h1>Search</h1>
+      <form id="search-form" class="card">
+        <div class="row">
+          <label for="search-kind">Search by</label>
+          <select id="search-kind">
+            <option value="name">Real name + date of birth</option>
+            <option value="pseudonym">Fake name</option>
+            <option value="person_id">Person ID</option>
+            <option value="document_number">Document number</option>
+          </select>
+        </div>
+        <div class="row">
+          <input id="search-text" type="text" autocomplete="off" placeholder="Name, e.g. Erika Mustermann" aria-label="Search text">
+          <input id="search-dob" type="text" autocomplete="off" placeholder="Date of birth, e.g. 12.08.1964" aria-label="Date of birth">
+          <button type="submit">Search</button>
+        </div>
+      </form>
+      <div id="search-error" class="alert fail" hidden></div>
+      <div id="search-results"></div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

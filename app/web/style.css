@@ -1,0 +1,105 @@
+/* info-anonymizer – plain CSS, no framework. Colours are defined once as "tokens". */
+:root {
+  --bg: #f4f6f7; --surface: #ffffff; --ink: #18222a; --muted: #5b6872; --line: #d6dde2;
+  --accent: #1f5f8b; --accent-ink: #ffffff;
+  --ok: #1d7446;   --ok-bg: #e2f3e9;
+  --warn: #8a5a00; --warn-bg: #fbefd4;
+  --fail: #b3261e; --fail-bg: #fbe4e2;
+  --edit: #3d4f9e; --edit-bg: #e6eafb;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #10161b; --surface: #18222a; --ink: #e3eaee; --muted: #9aa9b3; --line: #2c3a44;
+    --accent: #6bb4e0; --accent-ink: #0d1a22;
+    --ok: #6fd39b; --ok-bg: #163225; --warn: #efbe58; --warn-bg: #382b11; --fail: #f28b82; --fail-bg: #3c1c1a;
+    --edit: #aab8ff; --edit-bg: #252c52;
+    color-scheme: dark;
+  }
+}
+
+/* IMPORTANT: "hidden" must always win. Without this line, a rule like
+   ".loading { display: flex }" shows an element even when it is hidden
+   (this bug kept the loading box visible in the first version). */
+[hidden] { display: none !important; }
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font); }
+h1 { font-size: 1.5rem; margin: 0 0 10px; }
+h2 { font-size: 1.1rem; margin: 22px 0 6px; }
+.muted { color: var(--muted); }
+.small { font-size: 0.86rem; }
+
+.topbar { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; padding: 10px 20px;
+          background: var(--surface); border-bottom: 1px solid var(--line); }
+.brand { font-weight: 700; }
+.topbar nav { display: flex; gap: 6px; }
+.topbar nav a { color: var(--ink); text-decoration: none; padding: 5px 12px; border-radius: 6px; }
+.topbar nav a.active { background: var(--accent); color: var(--accent-ink); }
+.local-note { margin-left: auto; font-size: 0.8rem; color: var(--warn); }
+
+main { max-width: 1280px; margin: 0 auto; padding: 24px 20px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin: 14px 0; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px; }
+.head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+button, .button { font: inherit; padding: 8px 18px; border-radius: 8px; border: 1.5px solid var(--accent);
+                  background: var(--accent); color: var(--accent-ink); cursor: pointer; font-weight: 600; display: inline-block; }
+.secondary, button.secondary { background: transparent; color: var(--accent); }
+button:disabled { opacity: 0.45; cursor: default; }
+button:focus-visible, .button:focus-within, input:focus-visible, select:focus-visible, a:focus-visible {
+  outline: 3px solid var(--accent); outline-offset: 2px; }
+input[type=text], select { font: inherit; padding: 7px 9px; border-radius: 7px; border: 1.5px solid var(--line);
+                           background: var(--bg); color: var(--ink); min-width: 0; }
+
+/* Upload */
+.file-list { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-direction: column; gap: 4px; }
+.file-list label { display: flex; gap: 10px; align-items: center; font-family: var(--mono); font-size: 0.88rem; word-break: break-all; }
+.file-list .size { color: var(--muted); font-family: var(--font); white-space: nowrap; }
+
+/* Loading */
+.loading { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 70px 20px; }
+.spinner { width: 52px; height: 52px; border-radius: 50%; border: 5px solid var(--line); border-top-color: var(--accent);
+           animation: spin 1s linear infinite; margin-bottom: 18px; }
+.timer { font-variant-numeric: tabular-nums; font-size: 1.2rem; font-weight: 600; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+
+/* Review */
+.review { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 20px; align-items: start; margin-top: 10px; }
+@media (max-width: 900px) { .review { grid-template-columns: 1fr; } }
+.pages { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 12px; }
+.pages img { width: 100%; border: 1px solid var(--line); border-radius: 8px; background: #fff; cursor: zoom-in; }
+.pages img.zoomed { position: fixed; inset: 2vh 2vw; width: 96vw; height: 96vh; object-fit: contain; z-index: 10;
+                    cursor: zoom-out; box-shadow: 0 0 0 100vmax rgba(0,0,0,0.65); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+table { border-collapse: collapse; width: 100%; }
+.fields td { padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.fields td.label { width: 32%; font-size: 0.9rem; padding-top: 14px; }
+.fields td.state { width: 1%; padding-top: 13px; }
+.fields td.anon-cell { width: 1%; padding-top: 12px; white-space: nowrap; }
+.fields td.anon-cell label { display: flex; gap: 5px; align-items: center; cursor: pointer; }
+.fields td.anon-cell input:disabled + span { color: var(--muted); }
+.fields input { width: 100%; }
+.fields .msgs { margin: 4px 0 0; padding-left: 16px; font-size: 0.8rem; color: var(--muted); }
+.fields tr.edited .msgs { opacity: 0.5; text-decoration: line-through; }
+
+.badge { display: inline-block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+         padding: 3px 9px; border-radius: 99px; white-space: nowrap; }
+.badge.big { font-size: 0.85rem; padding: 4px 12px; }
+.ok   { background: var(--ok-bg);   color: var(--ok); }
+.warn { background: var(--warn-bg); color: var(--warn); }
+.fail { background: var(--fail-bg); color: var(--fail); }
+.edited-badge { background: var(--edit-bg); color: var(--edit); }
+
+.checks { list-style: none; padding: 0; margin: 0 0 10px; display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
+.checks li { padding: 6px 10px; border-radius: 6px; }
+.alert { padding: 10px 12px; border-radius: 8px; margin: 10px 0; }
+.big-alert { font-size: 1.15rem; font-weight: 600; padding: 16px; }
+.choices { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; margin: 0; }
+.choices label { display: flex; gap: 8px; align-items: baseline; }
+
+.json { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px;
+        overflow-x: auto; font-family: var(--mono); font-size: 0.82rem; max-height: 60vh; }
+.result h2 { margin-top: 0; }

@@ -1,0 +1,21 @@
+# info-anonymizer settings (spec section K)
+
+# Anonymization
+tokenize_low_risk_fields: false      # option (b) later: true
+pseudonym_locale: "en_US"            # future option: "de_DE"
+pseudonym_include_middle_name: true
+pseudonym_match_gender: true
+
+# Local LLM (Ollama) – chosen by test in milestone 4 (2 rounds, 6 models, 8 documents):
+# qwen3-vl:4b-instruct had the fewest wrong fields (1 of 74). Second option:
+# "qwen3.5:4b" (faster, but it once took the card access number as the ID number).
+llm_model: "qwen3-vl:4b-instruct"
+ollama_host: "http://localhost:11434"
+llm_temperature: 0
+
+# OCR
+tesseract_languages: "deu+eng"
+
+# Storage
+vault_path: "data/vault.db"
+people_dir: "people"
